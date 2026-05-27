@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rogue Agent Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Rogue Agent</h1>
+            <p class="subtitle">Autonomous Local QA Monitor</p>
+        </header>
+
+        <main>
+            <div class="panel controls">
+                <h2>Target Configuration</h2>
+
+                <!-- Mode Switcher -->
+                <div class="mode-switcher">
+                    <button class="mode-btn active" id="mode-single" onclick="switchMode('single')">
+                        <span class="mode-icon">🐍</span> Single App
+                    </button>
+                    <button class="mode-btn" id="mode-django" onclick="switchMode('django')">
+                        <span class="mode-icon">🦄</span> Django Only
+                    </button>
+                    <button class="mode-btn" id="mode-react" onclick="switchMode('react')">
+                        <span class="mode-icon">⚛️</span> React Only
+                    </button>
+                    <button class="mode-btn" id="mode-fullstack" onclick="switchMode('fullstack')">
+                        <span class="mode-icon">🔥</span> Fullstack
+                    </button>
+                </div>
+
+                <!-- ── SINGLE APP MODE ── -->
+                <div id="form-single" class="mode-form">
+                    <div class="input-group">
+                        <label for="single-project-dir">Project Directory Path</label>
+                        <input type="text" id="single-project-dir" placeholder="e.g. C:\Users\Username\Projects\MyApp" />
+                    </div>
+                    <div class="input-group">
+                        <label for="single-main-script">Main Script Path (Relative to directory)</label>
+                        <input type="text" id="single-main-script" placeholder="e.g. src/main.py" />
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-index-single" class="btn primary" onclick="runSingleIndex()">
+                            <span class="icon">📦</span> <span class="btn-text">Index Codebase</span>
+                        </button>
+                        <button id="btn-run-single" class="btn accent" onclick="runSingleAgent()">
+                            <span class="icon">🚀</span> <span class="btn-text">Run Agent Monitor</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── DJANGO ONLY MODE ── -->
+                <div id="form-django" class="mode-form hidden">
+                    <div class="info-badge">
+                        <span>🦄</span> Runs <code>python manage.py check</code> on your Django backend and auto-patches Python errors.
+                    </div>
+                    <div class="input-group">
+                        <label for="django-backend-dir">Django Backend Directory</label>
+                        <input type="text" id="django-backend-dir" placeholder="e.g. C:\Projects\myapp\backend" />
+                    </div>
+                    <div class="input-group">
+                        <label for="django-main-script">Entry Script (Relative)</label>
+                        <input type="text" id="django-main-script" placeholder="manage.py" value="manage.py" />
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-index-django" class="btn primary" onclick="runDjangoIndex()">
+                            <span class="icon">📦</span> <span class="btn-text">Index Backend</span>
+                        </button>
+                        <button id="btn-run-django" class="btn accent django-accent" onclick="runDjangoAgent()">
+                            <span class="icon">🦄</span> <span class="btn-text">Run Django Monitor</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── REACT ONLY MODE ── -->
+                <div id="form-react" class="mode-form hidden">
+                    <div class="info-badge react-badge">
+                        <span>⚛️</span> Runs <code>npm run build</code> on your React frontend and auto-patches JS/JSX/TSX errors.
+                    </div>
+                    <div class="input-group">
+                        <label for="react-frontend-dir">React Frontend Directory</label>
+                        <input type="text" id="react-frontend-dir" placeholder="e.g. C:\Projects\myapp\frontend" />
+                    </div>
+                    <div class="input-group">
+                        <label for="react-build-command">npm Build Command</label>
+                        <div class="select-wrapper">
+                            <select id="react-build-command">
+                                <option value="build">build — production build check</option>
+                                <option value="test">test — run test suite</option>
+                                <option value="lint">lint — run linter</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-index-react" class="btn primary" onclick="runReactIndex()">
+                            <span class="icon">📦</span> <span class="btn-text">Index Frontend</span>
+                        </button>
+                        <button id="btn-run-react" class="btn accent react-accent" onclick="runReactAgent()">
+                            <span class="icon">⚛️</span> <span class="btn-text">Run React Monitor</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── FULLSTACK MODE ── -->
+                <div id="form-fullstack" class="mode-form hidden">
+                    <div class="info-badge fullstack-badge">
+                        <span>🔥</span> Monitors both your Django backend and React frontend — detects and patches errors in both.
+                    </div>
+                    <div class="two-col">
+                        <div class="col-card backend-card">
+                            <div class="col-header">🦄 Django Backend</div>
+                            <div class="input-group">
+                                <label for="fs-backend-dir">Backend Directory</label>
+                                <input type="text" id="fs-backend-dir" placeholder="e.g. C:\Projects\myapp\backend" />
+                            </div>
+                            <div class="input-group">
+                                <label for="fs-main-script">Entry Script (Relative)</label>
+                                <input type="text" id="fs-main-script" placeholder="manage.py" value="manage.py" />
+                            </div>
+                        </div>
+                        <div class="col-card frontend-card">
+                            <div class="col-header">⚛️ React Frontend</div>
+                            <div class="input-group">
+                                <label for="fs-frontend-dir">Frontend Directory</label>
+                                <input type="text" id="fs-frontend-dir" placeholder="e.g. C:\Projects\myapp\frontend" />
+                            </div>
+                            <div class="input-group">
+                                <label for="fs-build-command">npm Build Command</label>
+                                <div class="select-wrapper">
+                                    <select id="fs-build-command">
+                                        <option value="build">build</option>
+                                        <option value="test">test</option>
+                                        <option value="lint">lint</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-index-fullstack" class="btn primary" onclick="runFullstackIndex()">
+                            <span class="icon">📦</span> <span class="btn-text">Index Both</span>
+                        </button>
+                        <button id="btn-run-fullstack" class="btn accent fullstack-accent" onclick="runFullstackAgent()">
+                            <span class="icon">🔥</span> <span class="btn-text">Run Fullstack Monitor</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Terminal -->
+            <div class="panel terminal-wrapper">
+                <div class="terminal-header">
+                    <div class="dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="terminal-title" id="terminal-title">Agent Logs</span>
+                    <button class="clear-btn" onclick="clearTerminal()">Clear</button>
+                </div>
+                <div class="terminal-body" id="terminal">
+                    <div class="log-line system">Waiting for configuration...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

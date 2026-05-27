@@ -1,0 +1,462 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Rogue Agent Dashboard — style.css
+   Design tokens, layout, components, and theme variants.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+    --bg-color:        #0b0f19;
+    --panel-bg:        rgba(20, 25, 40, 0.6);
+    --border-color:    rgba(255, 255, 255, 0.1);
+    --text-primary:    #f0f4ff;
+    --text-secondary:  #94a3b8;
+
+    /* Brand accents */
+    --accent-purple:   #8b5cf6;
+    --accent-cyan:     #06b6d4;
+    --accent-green:    #10b981;
+    --accent-orange:   #f97316;
+
+    /* Per-mode accent colours */
+    --django-color:    #16a34a;   /* green  */
+    --react-color:     #38bdf8;   /* sky    */
+    --fullstack-color: #f97316;   /* orange */
+
+    --terminal-bg:     rgba(5, 7, 12, 0.85);
+    --font-ui:         'Inter', sans-serif;
+    --font-code:       'Fira Code', monospace;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ── Animated Background Orbs ───────────────────────────────────────────────── */
+.background-orbs {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.45;
+    animation: float 20s infinite ease-in-out alternate;
+}
+
+.orb-1 {
+    top: -10%; left: -10%;
+    width: 500px; height: 500px;
+    background: var(--accent-purple);
+}
+
+.orb-2 {
+    bottom: -10%; right: -10%;
+    width: 600px; height: 600px;
+    background: var(--accent-cyan);
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(50px, 50px) scale(1.1); }
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.container {
+    width: 100%;
+    max-width: 1050px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+header { text-align: center; }
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ── Glass Panel ────────────────────────────────────────────────────────────── */
+.panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.controls h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Mode Switcher Tabs ─────────────────────────────────────────────────────── */
+.mode-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.mode-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+}
+
+.mode-icon { margin-right: 0.3rem; }
+
+/* ── Mode Forms ─────────────────────────────────────────────────────────────── */
+.mode-form { animation: fadeIn 0.2s ease; }
+.mode-form.hidden { display: none; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Info Badges ────────────────────────────────────────────────────────────── */
+.info-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.info-badge code {
+    font-family: var(--font-code);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+}
+
+.info-badge.react-badge {
+    background: rgba(56, 189, 248, 0.08);
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.info-badge.fullstack-badge {
+    background: rgba(249, 115, 22, 0.08);
+    border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* ── Input Groups ───────────────────────────────────────────────────────────── */
+.input-group { margin-bottom: 1.25rem; }
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-code);
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+/* ── Select Wrapper (custom arrow) ──────────────────────────────────────────── */
+.select-wrapper { position: relative; }
+
+.select-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+}
+
+.select-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.9rem;
+}
+
+/* ── Two-column Fullstack Layout ────────────────────────────────────────────── */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.col-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+}
+
+.col-card.backend-card  { border-top: 3px solid var(--django-color); }
+.col-card.frontend-card { border-top: 3px solid var(--react-color); }
+
+.col-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+/* ── Action Buttons ─────────────────────────────────────────────────────────── */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn {
+    flex: 1;
+    padding: 0.9rem 1rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.btn:active  { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Ghost button */
+.btn.primary {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+.btn.primary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+
+/* Default accent — purple→cyan */
+.btn.accent {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    color: #fff;
+    box-shadow: 0 8px 20px -8px rgba(139, 92, 246, 0.5);
+}
+.btn.accent:hover:not(:disabled) {
+    filter: brightness(1.12);
+    box-shadow: 0 12px 24px -8px rgba(139, 92, 246, 0.65);
+}
+
+/* Django accent — green */
+.btn.django-accent {
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    box-shadow: 0 8px 20px -8px rgba(22, 163, 74, 0.5);
+}
+.btn.django-accent:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 12px 24px -8px rgba(22, 163, 74, 0.65);
+}
+
+/* React accent — sky blue */
+.btn.react-accent {
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    box-shadow: 0 8px 20px -8px rgba(56, 189, 248, 0.45);
+}
+.btn.react-accent:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 12px 24px -8px rgba(56, 189, 248, 0.6);
+}
+
+/* Fullstack accent — orange */
+.btn.fullstack-accent {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    box-shadow: 0 8px 20px -8px rgba(249, 115, 22, 0.45);
+}
+.btn.fullstack-accent:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 12px 24px -8px rgba(249, 115, 22, 0.6);
+}
+
+/* ── Terminal ───────────────────────────────────────────────────────────────── */
+.terminal-wrapper { padding: 0; overflow: hidden; }
+
+.terminal-header {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dots { display: flex; gap: 6px; }
+
+.dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+}
+.dot.red    { background: #ef4444; }
+.dot.yellow { background: #f59e0b; }
+.dot.green  { background: #10b981; }
+
+.terminal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+}
+
+.clear-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.65rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.clear-btn:hover { background: rgba(255, 255, 255, 0.12); color: var(--text-primary); }
+
+.terminal-body {
+    background: var(--terminal-bg);
+    padding: 1.5rem;
+    height: 420px;
+    overflow-y: auto;
+    font-family: var(--font-code);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+}
+
+/* ── Log Line Colours ───────────────────────────────────────────────────────── */
+.log-line            { margin-bottom: 0.2rem; word-break: break-all; white-space: pre-wrap; }
+.log-line.system     { color: var(--text-secondary); }
+.log-line.info       { color: #60a5fa; }
+.log-line.success    { color: #34d399; }
+.log-line.error      { color: #f87171; }
+.log-line.agent      { color: #c084fc; }
+
+/* ── Spinner ────────────────────────────────────────────────────────────────── */
+.spinner {
+    display: inline-block;
+    width: 0.9rem; height: 0.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 680px) {
+    .two-col { grid-template-columns: 1fr; }
+
+    .mode-switcher { gap: 0.35rem; }
+    .mode-btn { font-size: 0.8rem; padding: 0.5rem 0.6rem; }
+
+    .action-buttons { flex-direction: column; }
+
+    header h1 { font-size: 2rem; }
+}
