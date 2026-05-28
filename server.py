@@ -8,12 +8,22 @@ import sys
 import io
 
 from codebase_indexer import index_codebase
-from rogue_agent import run_agent, run_django_agent, run_react_agent, run_fullstack_agent
+from rogue_agent import (
+    run_agent,
+    run_django_agent,
+    run_react_agent,
+    run_fullstack_agent,
+)
 
 app = FastAPI()
 
-os.makedirs("static", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ─── Static Files ─────────────────────────────────────────────────────────────
+
+STATIC_DIR = "static"
+
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 # ─── Request Models ───────────────────────────────────────────────────────────
@@ -21,23 +31,28 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 class IndexRequest(BaseModel):
     project_dir: str
 
+
 class RunRequest(BaseModel):
     project_dir: str
     main_script: str
+
 
 class DjangoRunRequest(BaseModel):
     backend_dir: str
     main_script: str = "manage.py"
 
+
 class ReactRunRequest(BaseModel):
     frontend_dir: str
     frontend_command: str = "build"
+
 
 class FullstackRunRequest(BaseModel):
     backend_dir: str
     main_script: str = "manage.py"
     frontend_dir: str
     frontend_command: str = "build"
+
 
 class FullstackIndexRequest(BaseModel):
     backend_dir: str
@@ -47,28 +62,41 @@ class FullstackIndexRequest(BaseModel):
 # ─── Streaming Helper ─────────────────────────────────────────────────────────
 
 def make_stream(fn, *args):
-    """Wraps a synchronous function call in a stdout-capturing async generator."""
+    """
+    Wrap synchronous functions into async streaming responses.
+    """
+
     async def log_stream():
         old_stdout = sys.stdout
-        sys.stdout = stream = io.StringIO()
+        stream = io.StringIO()
+        sys.stdout = stream
+
         try:
             task = asyncio.create_task(asyncio.to_thread(fn, *args))
+
             last_pos = 0
+
             while not task.done():
                 stream.seek(last_pos)
+
                 new_output = stream.read()
+
                 if new_output:
                     yield new_output
                     last_pos = stream.tell()
-                yield " \n"
+
                 await asyncio.sleep(0.5)
 
             stream.seek(last_pos)
-            new_output = stream.read()
-            if new_output:
-                yield new_output
+
+            remaining_output = stream.read()
+
+            if remaining_output:
+                yield remaining_output
+
         except Exception as e:
-            yield f"[Error] {str(e)}\n"
+            yield f"\n[ERROR] {str(e)}\n"
+
         finally:
             sys.stdout = old_stdout
 
@@ -79,61 +107,77 @@ def make_stream(fn, *args):
 
 @app.get("/")
 async def read_index():
-    return FileResponse("static/index.html")
+    index_path = os.path.join(STATIC_DIR, "index.html")
+
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+
+    return {"message": "FastAPI server is running"}
 
 
-# -- Single-app endpoints (original) --
+# ─── Single App Endpoints ─────────────────────────────────────────────────────
 
 @app.post("/api/index")
 async def api_index(req: IndexRequest):
     return StreamingResponse(
         make_stream(index_codebase, req.project_dir),
-        media_type="text/plain"
+        media_type="text/plain",
     )
+
 
 @app.post("/api/run")
 async def api_run(req: RunRequest):
     return StreamingResponse(
         make_stream(run_agent, req.project_dir, req.main_script),
-        media_type="text/plain"
+        media_type="text/plain",
     )
 
 
-# -- Django-only endpoint --
+# ─── Django Endpoint ──────────────────────────────────────────────────────────
 
 @app.post("/api/run-django")
 async def api_run_django(req: DjangoRunRequest):
     return StreamingResponse(
         make_stream(run_django_agent, req.backend_dir, req.main_script),
-        media_type="text/plain"
+        media_type="text/plain",
     )
 
 
-# -- React-only endpoint --
+# ─── React Endpoint ───────────────────────────────────────────────────────────
 
 @app.post("/api/run-react")
 async def api_run_react(req: ReactRunRequest):
     return StreamingResponse(
-        make_stream(run_react_agent, req.frontend_dir, req.frontend_command),
-        media_type="text/plain"
+        make_stream(
+            run_react_agent,
+            req.frontend_dir,
+            req.frontend_command,
+        ),
+        media_type="text/plain",
     )
 
 
-# -- Fullstack (Django + React) endpoints --
+# ─── Fullstack Index Endpoint ─────────────────────────────────────────────────
 
 @app.post("/api/index-fullstack")
 async def api_index_fullstack(req: FullstackIndexRequest):
+
     def index_both():
         print("=== Indexing Django Backend ===")
         index_codebase(req.backend_dir)
+
         print("\n=== Indexing React Frontend ===")
         index_codebase(req.frontend_dir)
-        print("\n=== Indexing complete ===")
+
+        print("\n=== Indexing Complete ===")
 
     return StreamingResponse(
         make_stream(index_both),
-        media_type="text/plain"
+        media_type="text/plain",
     )
+
+
+# ─── Fullstack Run Endpoint ───────────────────────────────────────────────────
 
 @app.post("/api/run-fullstack")
 async def api_run_fullstack(req: FullstackRunRequest):
@@ -145,10 +189,5 @@ async def api_run_fullstack(req: FullstackRunRequest):
             req.frontend_dir,
             req.frontend_command,
         ),
-        media_type="text/plain"
+        media_type="text/plain",
     )
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
